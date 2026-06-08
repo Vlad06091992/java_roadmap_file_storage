@@ -1,5 +1,6 @@
 package io.roadmap.filestorage.controller;
 
+import io.roadmap.filestorage.exceptions.UserAlreadyExistException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -23,6 +24,16 @@ public class GlobalExceptionHandler {
                         FieldError::getDefaultMessage,
                         (existing, replacement) -> existing
                 ));
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+    }
+
+
+    @ExceptionHandler(UserAlreadyExistException.class)
+    public ResponseEntity<Object> handleGlobalException(UserAlreadyExistException ex) {
+        String message = ex.getMessage();
+
+        Map<String, String> response = Map.of("message",message);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 
     }

@@ -1,0 +1,3 @@
+ALTER TABLE users
+    DROP COLUMN id CASCADE,
+  ADD COLUMN id UUID PRIMARY KEY DEFAULT gen_random_uuid();
