@@ -22,17 +22,15 @@ public class AuthService {
     private final UserDetailsManager userDetailsManager;
     private final PasswordEncoder passwordEncoder;
 
-    public Object login(LoginDTO loginRequest) {
+    public SecurityContext login(LoginDTO loginRequest) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                 loginRequest.username(), loginRequest.password());
-
-        System.out.println(token);
 
         Authentication authentication = authenticationManager.authenticate(token);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
-        return null;
+        return context;
     }
 
 

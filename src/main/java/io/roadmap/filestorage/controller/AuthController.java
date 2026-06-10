@@ -11,6 +11,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,10 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final SecurityContextRepository securityContextRepository;
+    private final SecurityContextLogoutHandler securityContextLogoutHandler;
 
     @PostMapping("/sign-in")
     public RegisterOrLoginResponseDTO login(@RequestBody LoginDTO loginRequest, HttpServletRequest request, HttpServletResponse response) {
-        authService.login(loginRequest);
+        SecurityContext context = authService.login(loginRequest);
+        securityContextRepository.saveContext(context, request, response);
+
         RegisterOrLoginResponseDTO registerResponseDTO = new RegisterOrLoginResponseDTO(loginRequest.username());
         return registerResponseDTO;
 
@@ -35,6 +43,13 @@ public class AuthController {
     public ResponseEntity<RegisterOrLoginResponseDTO> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletRequest request, HttpServletResponse response) {
         User user = authService.register(registerDTO);
         RegisterOrLoginResponseDTO registerResponseDTO = new RegisterOrLoginResponseDTO(user.getUsername());
-        return new ResponseEntity(registerResponseDTO,HttpStatus.CREATED);
+        return new ResponseEntity(registerResponseDTO, HttpStatus.CREATED);
+    }
+
+
+    @PostMapping("/sign-out")
+    public ResponseEntity<Void> performLogout(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
+        securityContextLogoutHandler.logout(request, response, authentication);
+        return ResponseEntity.noContent().build();
     }
 }
