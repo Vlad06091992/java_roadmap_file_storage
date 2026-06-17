@@ -3,3 +3,34 @@ services:
     image: 'redis:latest'
     ports:
       - '6379:6379'
+  minio:
+    image: quay.io/minio/aistor/minio:latest
+    container_name: aistor-server
+    ports:
+      - "9000:9000"   # S3 API Port
+      - "9001:9001"   # MinIO Console Web UI Port
+    volumes:
+      - $HOME/minio/data:/mnt/data
+      - $HOME/minio/minio.license:/minio.license
+      - $HOME/minio/certs:/etc/minio/certs
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: minio server /mnt/data --license /minio.license
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: file_storage_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: file_storage
+    ports:
+      - '5441:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:
