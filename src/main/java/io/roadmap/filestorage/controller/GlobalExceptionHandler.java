@@ -1,5 +1,6 @@
 package io.roadmap.filestorage.controller;
 
+import io.roadmap.filestorage.exceptions.ResourceNotFoundException;
 import io.roadmap.filestorage.exceptions.UserAlreadyExistException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,13 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    //TODO сделать позже
+//    private Map<String,String> getResponse(String message){
+//        Map<String, String> response = Map.of("message",message);
+//        return response;
+//    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleGlobalException(MethodArgumentNotValidException ex) {
         List<FieldError> errors = ex.getFieldErrors();
@@ -33,8 +41,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleGlobalException(UserAlreadyExistException ex) {
         String message = ex.getMessage();
 
-        Map<String, String> response = Map.of("message",message);
+        Map<String, String> response = Map.of("message", message);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleGlobalException(ResourceNotFoundException ex) {
+        String message = ex.getMessage();
+
+        Map<String, String> response = Map.of("message", message);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleGlobalException(RuntimeException ex) {
+        String message = ex.getMessage();
+
+        Map<String, String> response = Map.of("message", "Internal Server Error");
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 
     }
 }
