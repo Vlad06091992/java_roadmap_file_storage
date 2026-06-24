@@ -19,8 +19,23 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserController {
 
+//    @GetMapping("/me")
+//    public ResponseEntity<RegisterOrLoginResponseDTO> me(Authentication authentication) {
+//        String username = "";
+//        Optional<Object> principal = Optional.of(authentication.getPrincipal());
+//
+//        if(principal.isPresent()){
+//            User user = (User) principal.get();
+//            username = user.getUsername();
+//        }
+//
+//        RegisterOrLoginResponseDTO registerResponseDTO = new RegisterOrLoginResponseDTO(username);
+//        return new ResponseEntity(registerResponseDTO, HttpStatus.OK);
+//    }
+
+    //TODO разобраться, как еще можно получить юзера, например @AuthenticationPrincipal
     @GetMapping("/me")
-    public ResponseEntity<RegisterOrLoginResponseDTO> me(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<RegisterOrLoginResponseDTO> me(Authentication authentication) {
         String username = "";
         Optional<Object> principal = Optional.of(authentication.getPrincipal());
 
@@ -30,6 +45,7 @@ public class UserController {
         }
 
         RegisterOrLoginResponseDTO registerResponseDTO = new RegisterOrLoginResponseDTO(username);
-        return new ResponseEntity(registerResponseDTO, HttpStatus.CREATED);
+        return new ResponseEntity(registerResponseDTO, HttpStatus.OK);
     }
+
 }
