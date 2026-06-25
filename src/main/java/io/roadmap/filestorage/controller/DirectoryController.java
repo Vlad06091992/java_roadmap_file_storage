@@ -1,6 +1,6 @@
 package io.roadmap.filestorage.controller;
 
-import io.roadmap.filestorage.dto.CreateFolderParamDTO;
+import io.roadmap.filestorage.dto.PathParams;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
 import io.roadmap.filestorage.services.DirectoryService;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ public class DirectoryController {
     private final DirectoryService directoryService;
 
     @PostMapping("/directory")
-    public ResponseEntity<Object>createDirectory (@Valid @ModelAttribute CreateFolderParamDTO params) throws Exception {
+    public ResponseEntity<Object>createDirectory (@Valid @ModelAttribute PathParams params) throws Exception {
         String path = params.path();
         GetDirectoryDTO getDirectoryDTO =  directoryService.createFolder(path);
         return new ResponseEntity<>(getDirectoryDTO, HttpStatus.CREATED);

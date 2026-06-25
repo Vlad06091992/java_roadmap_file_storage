@@ -1,12 +1,15 @@
 package io.roadmap.filestorage.controller;
 
 import io.minio.GetObjectResponse;
+import io.roadmap.filestorage.components.PathResolver;
+import io.roadmap.filestorage.dto.PathParams;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
 import io.roadmap.filestorage.dto.GetFileDTO;
 import io.roadmap.filestorage.dto.interfaces.GetResourceData;
 import io.roadmap.filestorage.services.DirectoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
@@ -24,12 +27,20 @@ import java.io.InputStream;
 @RequiredArgsConstructor
 @Validated
 public class ResourceController {
+
     private final DirectoryService directoryService;
+    private final PathResolver pathResolver;
 
     @PostMapping("/resource")
     public ResponseEntity<Object>createDirectory (HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         return new ResponseEntity<>("hz", HttpStatus.OK);
+    }
+
+    @GetMapping("/path-resolver")
+    public Object getPathData(@Valid @ModelAttribute PathParams params){
+    String path = params.path();
+        return pathResolver.getPathData(path);
     }
 
 
