@@ -5,7 +5,12 @@ import io.roadmap.filestorage.dto.ResourceTypes;
 
 public interface GetResourceData {
     String path();
+
     String name();
+
+    default Long size() {
+        return null;
+    }
 
     @JsonProperty("type")
     ResourceTypes type();

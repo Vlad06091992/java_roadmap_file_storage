@@ -1,7 +1,10 @@
 package io.roadmap.filestorage.controller;
 
-import io.roadmap.filestorage.dto.PathParams;
+import io.minio.messages.Item;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
+import io.roadmap.filestorage.dto.GetFileDTO;
+import io.roadmap.filestorage.dto.PathParams;
+import io.roadmap.filestorage.dto.interfaces.GetResourceData;
 import io.roadmap.filestorage.services.DirectoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,10 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -28,6 +31,30 @@ public class DirectoryController {
         String path = params.path();
         GetDirectoryDTO getDirectoryDTO =  directoryService.createFolder(path);
         return new ResponseEntity<>(getDirectoryDTO, HttpStatus.CREATED);
+    }
+
+
+    @GetMapping("/directory")
+    public ResponseEntity<Object>getData (@Valid @ModelAttribute PathParams params) {
+        String path = params.path();
+        List<Item> data =  directoryService.getFolderData(path);
+
+        List<GetResourceData> d = data.stream()
+                .map(i -> {
+                    if (i.isDir()) {
+                        return GetDirectoryDTO.fromFullPath(i.objectName());
+                    } else {
+                        return GetFileDTO.fromFullPath(i.objectName(), i.size());
+
+                    }
+                }
+            )
+                .filter(e -> !(e.name().length() < 1))
+                .collect(Collectors.toList());
+
+
+
+        return new ResponseEntity<>(d, HttpStatus.OK);
     }
 
 

@@ -32,15 +32,21 @@ public class ResourceController {
     private final PathResolver pathResolver;
 
     @PostMapping("/resource")
-    public ResponseEntity<Object>createDirectory (HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseEntity<Object> createDirectory(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         return new ResponseEntity<>("hz", HttpStatus.OK);
     }
 
     @GetMapping("/path-resolver")
-    public Object getPathData(@Valid @ModelAttribute PathParams params){
-    String path = params.path();
+    public Object getPathData(@Valid @ModelAttribute PathParams params) {
+        String path = params.path();
         return pathResolver.getPathData(path);
+    }
+
+    @DeleteMapping("/resource")
+    public ResponseEntity<Void> remove(@RequestParam String path) {
+        directoryService.remove(path);
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -53,7 +59,7 @@ public class ResourceController {
         Boolean isDirectory = (path.charAt(path.length() - 1)) == '/';
 
         String[] parts = path.split("/");
-        String dirName =  parts[parts.length - 1] ;
+        String dirName = parts[parts.length - 1];
         String dirPath = parts.length > 1 ? path.substring(0, path.length() - 1) : "/";
 
         String directoryName = parts[parts.length - 1];
@@ -74,9 +80,8 @@ public class ResourceController {
 
         long s = Long.valueOf(size);
 
-        String type = isDirectory ? "DIRECTORY" : "FILE"
-                ;
-        GetResourceData getDirectoryDTO = isDirectory ? new GetDirectoryDTO(dirPath, dirName) : new GetFileDTO(dirPath, dirName,s);
+        String type = isDirectory ? "DIRECTORY" : "FILE";
+        GetResourceData getDirectoryDTO = isDirectory ? new GetDirectoryDTO(dirPath, dirName) : new GetFileDTO(dirPath, dirName, s);
 
         log.info("Type: {}", getDirectoryDTO.type());
 

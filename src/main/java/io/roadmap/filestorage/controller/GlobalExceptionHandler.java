@@ -1,5 +1,6 @@
 package io.roadmap.filestorage.controller;
 
+import io.roadmap.filestorage.exceptions.DirectoryAlreadyExistException;
 import io.roadmap.filestorage.exceptions.ResourceNotFoundException;
 import io.roadmap.filestorage.exceptions.UserAlreadyExistException;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,7 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
 
         Map<String, String> response = Map.of("message", message);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 
     }
 
@@ -61,6 +62,15 @@ public class GlobalExceptionHandler {
 
         Map<String, String> response = Map.of("message", "Internal Server Error");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
+    @ExceptionHandler(DirectoryAlreadyExistException.class)
+    public ResponseEntity<Object> handleGlobalException(DirectoryAlreadyExistException ex) {
+        String message = ex.getMessage();
+
+        Map<String, String> response = Map.of("message", message);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 
     }
 }

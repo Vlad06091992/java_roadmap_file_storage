@@ -1,27 +1,38 @@
 package io.roadmap.filestorage.services;
 
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
+import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
+import io.minio.messages.Item;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
+import io.roadmap.filestorage.exceptions.DirectoryAlreadyExistException;
 import io.roadmap.filestorage.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Headers;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DirectoryService {
+
+    private List<Item> getList(Iterable<Result<Item>> iterable) {
+        List<Item> list = new ArrayList<>();
+        iterable.forEach(i -> {
+            try {
+                list.add(i.get());
+            } catch (MinioException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return list;
+    }
 
     private final MinioClient minioClient;
 
@@ -51,6 +62,14 @@ public class DirectoryService {
         String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "") + "/";
 
 
+
+        boolean isExist = isExistObject(path);
+
+        if(isExist){
+            throw new DirectoryAlreadyExistException();
+        }
+
+
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket("user1111")
@@ -66,8 +85,6 @@ public class DirectoryService {
         try (GetObjectResponse stream = minioClient.getObject(
                 GetObjectArgs.builder()
                         .bucket("user1111")
-//                        .object("Полис.pdf")
-//                        .object("d/sticker.webp")
                         .object(path)
                         .build())) {
             // Read content
@@ -80,4 +97,62 @@ public class DirectoryService {
             throw new RuntimeException(e);
         }
     }
+
+
+    public List<Item> getFolderData(String path) {
+        Iterable<Result<Item>> results = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket("user1111")
+                        .prefix(path)
+                        .recursive(false)
+                        .build()
+
+
+        );
+
+        return getList(results);
+
+
+    }
+
+    public boolean isExistObject(String path){
+        try {
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket("user1111")
+                            .object(path)
+                            .build()
+            );
+
+            return true;
+
+        } catch (MinioException e) {
+            return false;
+        }
+    }
+
+    public void remove(String path) {
+        try {
+            // Проверяем существование объекта
+
+            boolean isExist = isExistObject(path);
+
+            if(!isExist){
+                throw new ResourceNotFoundException();
+            }
+
+            // Если дошли сюда - объект существует
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket("user1111")
+                            .object(path)
+                            .build()
+            );
+
+        } catch (MinioException e) {
+            System.err.println("Error occurred: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
 }
