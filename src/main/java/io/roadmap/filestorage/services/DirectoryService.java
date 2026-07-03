@@ -5,15 +5,18 @@ import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
+import io.roadmap.filestorage.dto.GetFileDTO;
 import io.roadmap.filestorage.exceptions.DirectoryAlreadyExistException;
 import io.roadmap.filestorage.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +84,8 @@ public class DirectoryService {
         return new GetDirectoryDTO(directoryPath, directoryName);
     }
 
+    // TODO вот это нужно переписать на minioClient.statObject() чтобы не тащить файл в ответ
+    // сейчас мы закрывается объект GetObjectResponse stream, костыль
     public GetObjectResponse getData(String path) {
         try (GetObjectResponse stream = minioClient.getObject(
                 GetObjectArgs.builder()
@@ -97,6 +102,22 @@ public class DirectoryService {
             throw new RuntimeException(e);
         }
     }
+
+
+    public GetObjectResponse getObject(String path) {
+        try  {
+            GetObjectResponse stream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket("user1111")
+                            .object(path)
+                            .build());
+
+            return stream;
+        } catch (MinioException e) {
+            throw new ResourceNotFoundException();
+        }
+    }
+
 
 
     public List<Item> getFolderData(String path) {

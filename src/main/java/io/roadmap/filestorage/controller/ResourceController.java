@@ -2,9 +2,7 @@ package io.roadmap.filestorage.controller;
 
 import io.minio.GetObjectResponse;
 import io.roadmap.filestorage.components.PathResolver;
-import io.roadmap.filestorage.dto.PathParams;
-import io.roadmap.filestorage.dto.GetDirectoryDTO;
-import io.roadmap.filestorage.dto.GetFileDTO;
+import io.roadmap.filestorage.dto.*;
 import io.roadmap.filestorage.dto.interfaces.GetResourceData;
 import io.roadmap.filestorage.services.DirectoryService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,10 +11,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 
@@ -88,42 +90,29 @@ public class ResourceController {
         return new ResponseEntity<>(getDirectoryDTO, HttpStatus.CREATED);
     }
 
-//    @GetMapping("/resource")
-//    public ResponseEntity<GetResourceData> getQuery(@RequestParam("path") String path, InputStream inputStream) {
-//
-//        //dir = folder1/folder2/folder3/
-//        //file = folder1/folder2/text.txt
-//
-//        Boolean isDirectory = (path.charAt(path.length() - 1)) == '/';
-//
-//        String[] parts = path.split("/");
-//        String dirName =  parts[parts.length - 1] ;
-//        String dirPath = parts.length > 1 ? path.substring(0, path.length() - 1) : "/";
-//
-//        String directoryName = parts[parts.length - 1];
-//
-//        int lastSlash = path.lastIndexOf('/');
-//        String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "");
-//
-//        GetObjectResponse result = directoryService.getData(path);
-//
-//        Headers headers = result.headers();
-//        String object = result.object();
-////        log.info("headers: {}",headers);
-////        log.info("object: {}",object);
-//
-//
-//        String size = headers.get("Content-Length");
-////        log.info("size: {}",size);
-//
-//        long s = Long.valueOf(size);
-//
-//        String type = isDirectory ? "DIRECTORY" : "FILE"
-//                ;
-//        GetResourceData getDirectoryDTO = isDirectory ? new GetDirectoryDTO(dirPath, dirName) : new GetFileDTO(dirPath, dirName,s);
-//
-//        log.info("Type: {}", getDirectoryDTO.type());
-//
-//        return new ResponseEntity<>(getDirectoryDTO, HttpStatus.CREATED);
-//    }
+    @GetMapping("/resource/download")
+    public ResponseEntity<Object> download(@RequestParam("path") String path) {
+        // Получаем файл из базы/диска
+//        File file = new File("document.pdf");
+//        Resource resource = new FileSystemResource(file);
+
+
+
+        GetObjectResponse result = directoryService.getObject(path);
+
+        InputStreamResource resource = new InputStreamResource(result);
+
+        String name = "hz";
+
+        Headers headers = result.headers();
+
+        String size = headers.get("Content-Length");
+
+
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .body(resource);
+    }
 }
