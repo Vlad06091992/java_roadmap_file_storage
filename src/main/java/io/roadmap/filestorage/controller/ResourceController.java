@@ -34,9 +34,14 @@ public class ResourceController {
     private final PathResolver pathResolver;
 
     @PostMapping("/resource")
-    public ResponseEntity<Object> createDirectory(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public ResponseEntity<Object> createDirectory(@RequestParam("object") MultipartFile multipartFile,
+                                                  @RequestParam(value = "path", required = false) String path,
+                                                  HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        return new ResponseEntity<>("hz", HttpStatus.OK);
+        GetFileDTO res = directoryService.saveFile(path,multipartFile);
+
+
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @GetMapping("/path-resolver")

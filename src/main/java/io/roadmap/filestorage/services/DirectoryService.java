@@ -1,7 +1,6 @@
 package io.roadmap.filestorage.services;
 
 import io.minio.*;
-import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
@@ -10,7 +9,6 @@ import io.roadmap.filestorage.exceptions.DirectoryAlreadyExistException;
 import io.roadmap.filestorage.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +36,29 @@ public class DirectoryService {
     }
 
     private final MinioClient minioClient;
+
+
+    public GetFileDTO saveFile(String path, MultipartFile file) throws Exception {
+
+        String[] parts = path.split("/");
+        String directoryName = parts[parts.length - 1];
+
+        int lastSlash = path.lastIndexOf('/');
+        String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "") + "/";
+
+        try (InputStream inputStream = file.getInputStream()) {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket("user1111")
+                            .object(path + "/" + file.getOriginalFilename()) // используем getOriginalFilename()
+                            .stream(inputStream, file.getSize(), Long.valueOf(-1)) // передаем размер
+                            .build()
+            );
+        }
+
+        return new GetFileDTO(directoryPath, file.getOriginalFilename(), file.getSize());
+    }
+
 
 //    public Object splitPath(String path) {
 //        String[] parts = path.split("/");
