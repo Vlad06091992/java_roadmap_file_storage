@@ -37,10 +37,7 @@ public class ResourceController {
     public ResponseEntity<Object> createDirectory(@RequestParam("object") MultipartFile multipartFile,
                                                   @RequestParam(value = "path", required = false) String path,
                                                   HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-        GetFileDTO res = directoryService.saveFile(path,multipartFile);
-
-
+        GetFileDTO res = directoryService.saveFile(path, multipartFile);
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
@@ -97,10 +94,11 @@ public class ResourceController {
 
     @GetMapping("/resource/download")
     public ResponseEntity<Object> download(@RequestParam("path") String path) {
+        //TODO папка скачивается пустым архивом
+
         // Получаем файл из базы/диска
 //        File file = new File("document.pdf");
 //        Resource resource = new FileSystemResource(file);
-
 
 
         GetObjectResponse result = directoryService.getObject(path);
@@ -114,10 +112,31 @@ public class ResourceController {
         String size = headers.get("Content-Length");
 
 
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(resource);
+    }
+
+    @GetMapping("/resource/move")
+    public ResponseEntity<Object> move(
+            @RequestParam("from") String from,
+            @RequestParam("to") String to
+    ) throws Exception {
+        GetObjectResponse result = directoryService.getObject(from);
+
+        //TODO все возможные проверки на наличие файла, путей
+
+        String name = result.object();
+        Headers headers = result.headers();
+        String size = headers.get("Content-Length");
+        directoryService.saveFromStream(result, to, name, Long.valueOf(size));
+        directoryService.remove(from);
+
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "" + "\"")
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .body(null);
     }
 }

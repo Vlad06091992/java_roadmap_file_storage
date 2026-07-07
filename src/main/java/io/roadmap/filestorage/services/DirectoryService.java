@@ -37,6 +37,30 @@ public class DirectoryService {
 
     private final MinioClient minioClient;
 
+    public void saveFromStream(InputStream stream, String path, String name, Long size) throws Exception {
+
+        String[] parts = path.split("/");
+        String directoryName = parts[parts.length - 1];
+
+        int lastSlash = path.lastIndexOf('/');
+        String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "") + "/";
+
+        try  {
+            String name1 = path + "/" + name;
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket("user1111")
+                            .object(path) // используем getOriginalFilename()
+                            .stream(stream, size, Long.valueOf(-1)) // передаем размер
+                            .build()
+            );
+        } catch (Exception e){
+
+        }
+
+//        return new GetFileDTO(directoryPath, file.getOriginalFilename(), file.getSize());
+    }
+
 
     public GetFileDTO saveFile(String path, MultipartFile file) throws Exception {
 
