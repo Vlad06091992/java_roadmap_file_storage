@@ -34,11 +34,16 @@ public class ResourceController {
     private final PathResolver pathResolver;
 
     @PostMapping("/resource")
-    public ResponseEntity<Object> createDirectory(@RequestParam("object") MultipartFile multipartFile,
+    public ResponseEntity<Object> createDirectory(
+//            @RequestParam("object") MultipartFile multipartFile,
+            @RequestParam("object") MultipartFile[] multipartFiles,
+
                                                   @RequestParam(value = "path", required = false) String path,
                                                   HttpServletRequest request, HttpServletResponse response) throws Exception {
-        GetFileDTO res = directoryService.saveFile(path, multipartFile);
-        return new ResponseEntity<>(res, HttpStatus.CREATED);
+        //TODO папка загружается только с одним файлом
+//        GetFileDTO res =  directoryService.saveFile(path, multipartFiles);
+          directoryService.saveFile(path, multipartFiles);
+        return new ResponseEntity<>("", HttpStatus.CREATED);
     }
 
     @GetMapping("/path-resolver")
@@ -49,6 +54,8 @@ public class ResourceController {
 
     @DeleteMapping("/resource")
     public ResponseEntity<Void> remove(@RequestParam String path) {
+
+
         directoryService.remove(path);
         return ResponseEntity.noContent().build();
     }
@@ -95,11 +102,6 @@ public class ResourceController {
     @GetMapping("/resource/download")
     public ResponseEntity<Object> download(@RequestParam("path") String path) {
         //TODO папка скачивается пустым архивом
-
-        // Получаем файл из базы/диска
-//        File file = new File("document.pdf");
-//        Resource resource = new FileSystemResource(file);
-
 
         GetObjectResponse result = directoryService.getObject(path);
 

@@ -2,6 +2,8 @@ package io.roadmap.filestorage.services;
 
 import io.minio.*;
 import io.minio.errors.MinioException;
+import io.minio.messages.DeleteRequest;
+import io.minio.messages.DeleteResult;
 import io.minio.messages.Item;
 import io.roadmap.filestorage.dto.GetDirectoryDTO;
 import io.roadmap.filestorage.dto.GetFileDTO;
@@ -13,9 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -38,14 +42,7 @@ public class DirectoryService {
     private final MinioClient minioClient;
 
     public void saveFromStream(InputStream stream, String path, String name, Long size) throws Exception {
-
-        String[] parts = path.split("/");
-        String directoryName = parts[parts.length - 1];
-
-        int lastSlash = path.lastIndexOf('/');
-        String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "") + "/";
-
-        try  {
+        try {
             String name1 = path + "/" + name;
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -54,7 +51,7 @@ public class DirectoryService {
                             .stream(stream, size, Long.valueOf(-1)) // передаем размер
                             .build()
             );
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -62,7 +59,7 @@ public class DirectoryService {
     }
 
 
-    public GetFileDTO saveFile(String path, MultipartFile file) throws Exception {
+    public void saveFile(String path, MultipartFile[] files) throws Exception {
 
         String[] parts = path.split("/");
         String directoryName = parts[parts.length - 1];
@@ -70,17 +67,22 @@ public class DirectoryService {
         int lastSlash = path.lastIndexOf('/');
         String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "") + "/";
 
-        try (InputStream inputStream = file.getInputStream()) {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket("user1111")
-                            .object(path + "/" + file.getOriginalFilename()) // используем getOriginalFilename()
-                            .stream(inputStream, file.getSize(), Long.valueOf(-1)) // передаем размер
-                            .build()
-            );
+
+        for(MultipartFile file:files){
+            try (InputStream inputStream = file.getInputStream()) {
+                minioClient.putObject(
+                        PutObjectArgs.builder()
+                                .bucket("user1111")
+                                .object(path + "/" + file.getOriginalFilename()) // используем getOriginalFilename()
+                                .stream(inputStream, file.getSize(), Long.valueOf(-1)) // передаем размер
+                                .build()
+                );
+            }
         }
 
-        return new GetFileDTO(directoryPath, file.getOriginalFilename(), file.getSize());
+
+
+//        return new GetFileDTO(directoryPath, files[0].getOriginalFilename(), files[0].getSize());
     }
 
 
@@ -110,10 +112,9 @@ public class DirectoryService {
         String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "") + "/";
 
 
-
         boolean isExist = isExistObject(path);
 
-        if(isExist){
+        if (isExist) {
             throw new DirectoryAlreadyExistException();
         }
 
@@ -150,7 +151,7 @@ public class DirectoryService {
 
 
     public GetObjectResponse getObject(String path) {
-        try  {
+        try {
             GetObjectResponse stream = minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket("user1111")
@@ -162,7 +163,6 @@ public class DirectoryService {
             throw new ResourceNotFoundException();
         }
     }
-
 
 
     public List<Item> getFolderData(String path) {
@@ -181,39 +181,93 @@ public class DirectoryService {
 
     }
 
-    public boolean isExistObject(String path){
-        try {
-            minioClient.statObject(
-                    StatObjectArgs.builder()
+    public boolean isExistObject(String path) {
+
+        String prefix = path.endsWith("/") ? path : path + "/";
+        boolean isFolder = path.endsWith("/");
+
+
+        if (isFolder) {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
                             .bucket("user1111")
-                            .object(path)
+                            .prefix(prefix)
+                            .maxKeys(1) // Optimization: Only look for the first matching item
                             .build()
             );
 
-            return true;
+            boolean b = results.iterator().hasNext();
+            return b;
 
-        } catch (MinioException e) {
-            return false;
+        } else {
+            try {
+                minioClient.statObject(
+                        StatObjectArgs.builder()
+                                .bucket("user1111")
+                                .object(path)
+                                .build()
+                );
+
+                return true;
+
+            } catch (MinioException e) {
+                return false;
+            }
         }
     }
 
+
     public void remove(String path) {
         try {
-            // Проверяем существование объекта
-
+            boolean isFolder = path.endsWith("/");
             boolean isExist = isExistObject(path);
 
-            if(!isExist){
+            if (!isExist) {
                 throw new ResourceNotFoundException();
             }
 
-            // Если дошли сюда - объект существует
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket("user1111")
-                            .object(path)
-                            .build()
-            );
+            if (isFolder) {
+                // Удаляем все объекты с префиксом (включая вложенные)
+                Iterable<Result<Item>> results = minioClient.listObjects(
+                        ListObjectsArgs.builder()
+                                .bucket("user1111")
+                                .prefix(path)
+                                .recursive(true)
+                                .build()
+                );
+
+                List<DeleteRequest.Object> objectsToDelete = new ArrayList<>();
+                for (Result<Item> result : results) {
+                    Item item = result.get();
+                    objectsToDelete.add(new DeleteRequest.Object(item.objectName()));
+                }
+
+                if (objectsToDelete.isEmpty()) {
+                    throw new ResourceNotFoundException(); // Папка пуста или не существует
+                }
+
+                Iterable<Result<DeleteResult.Error>> ress =  minioClient.removeObjects(
+                        RemoveObjectsArgs.builder()
+                                .bucket("user1111")
+                                .objects(objectsToDelete)
+                                .build()
+                );
+
+                for (Result<DeleteResult.Error> result : ress) {
+                    DeleteResult.Error error = result.get();
+                    System.out.println("Error in deleting object " + error.objectName() + "; " + error.message());
+                }
+
+
+            } else {
+                // Удаляем файл
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket("user1111")
+                                .object(path)
+                                .build()
+                );
+            }
 
         } catch (MinioException e) {
             System.err.println("Error occurred: " + e.getMessage());
