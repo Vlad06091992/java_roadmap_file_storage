@@ -56,21 +56,21 @@ public class GlobalExceptionHandler {
 
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Object> handleGlobalException(RuntimeException ex) {
-        String message = ex.getMessage();
+//    @ExceptionHandler(RuntimeException.class)
+//    public ResponseEntity<Object> handleGlobalException(RuntimeException ex) {
+//        String message = ex.getMessage();
+//
+//        Map<String, String> response = Map.of("message", "Internal Server Error");
+//        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//
+//    }
 
-        Map<String, String> response = Map.of("message", "Internal Server Error");
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-
-    }
-
-    @ExceptionHandler(DirectoryAlreadyExistException.class)
-    public ResponseEntity<Object> handleGlobalException(DirectoryAlreadyExistException ex) {
-        String message = ex.getMessage();
-
-        Map<String, String> response = Map.of("message", message);
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-
-    }
+//    @ExceptionHandler(DirectoryAlreadyExistException.class)
+//    public ResponseEntity<Object> handleGlobalException(DirectoryAlreadyExistException ex) {
+//        String message = ex.getMessage();
+//
+//        Map<String, String> response = Map.of("message", message);
+//        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+//
+//    }
 }

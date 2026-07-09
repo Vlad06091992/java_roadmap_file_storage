@@ -4,7 +4,7 @@ import io.minio.GetObjectResponse;
 import io.roadmap.filestorage.components.PathResolver;
 import io.roadmap.filestorage.dto.*;
 import io.roadmap.filestorage.dto.interfaces.GetResourceData;
-import io.roadmap.filestorage.services.DirectoryService;
+import io.roadmap.filestorage.services.ResourceService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,7 +30,7 @@ import java.io.InputStream;
 @Validated
 public class ResourceController {
 
-    private final DirectoryService directoryService;
+    private final ResourceService resourceService;
     private final PathResolver pathResolver;
 
     @PostMapping("/resource")
@@ -42,7 +42,7 @@ public class ResourceController {
                                                   HttpServletRequest request, HttpServletResponse response) throws Exception {
         //TODO папка загружается только с одним файлом
 //        GetFileDTO res =  directoryService.saveFile(path, multipartFiles);
-          directoryService.saveFile(path, multipartFiles);
+          resourceService.saveFile(path, multipartFiles);
         return new ResponseEntity<>("", HttpStatus.CREATED);
     }
 
@@ -56,7 +56,7 @@ public class ResourceController {
     public ResponseEntity<Void> remove(@RequestParam String path) {
 
 
-        directoryService.remove(path);
+        resourceService.remove(path);
         return ResponseEntity.noContent().build();
     }
 
@@ -78,7 +78,7 @@ public class ResourceController {
         int lastSlash = path.lastIndexOf('/');
         String directoryPath = (parts.length > 1 ? path.substring(0, lastSlash) : "");
 
-        GetObjectResponse result = directoryService.getData(path);
+        GetObjectResponse result = resourceService.getData(path);
 
         Headers headers = result.headers();
         String object = result.object();
@@ -103,7 +103,7 @@ public class ResourceController {
     public ResponseEntity<Object> download(@RequestParam("path") String path) throws Exception {
         //TODO папка скачивается пустым архивом
 
-        InputStream result = directoryService.getDownloadData(path);
+        InputStream result = resourceService.getDownloadData(path);
 
         InputStreamResource resource = new InputStreamResource(result);
 
@@ -120,15 +120,15 @@ public class ResourceController {
             @RequestParam("from") String from,
             @RequestParam("to") String to
     ) throws Exception {
-        GetObjectResponse result = directoryService.getObject(from);
+        GetObjectResponse result = resourceService.getObject(from);
 
         //TODO все возможные проверки на наличие файла, путей
 
         String name = result.object();
         Headers headers = result.headers();
         String size = headers.get("Content-Length");
-        directoryService.saveFromStream(result, to, name, Long.valueOf(size));
-        directoryService.remove(from);
+        resourceService.saveFromStream(result, to, name, Long.valueOf(size));
+        resourceService.remove(from);
 
 
         return ResponseEntity.ok()

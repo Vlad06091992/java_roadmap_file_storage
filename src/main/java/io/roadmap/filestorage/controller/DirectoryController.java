@@ -5,7 +5,7 @@ import io.roadmap.filestorage.dto.GetDirectoryDTO;
 import io.roadmap.filestorage.dto.GetFileDTO;
 import io.roadmap.filestorage.dto.PathParams;
 import io.roadmap.filestorage.dto.interfaces.GetResourceData;
-import io.roadmap.filestorage.services.DirectoryService;
+import io.roadmap.filestorage.services.ResourceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Validated
 public class DirectoryController {
-    private final DirectoryService directoryService;
+    private final ResourceService resourceService;
 
     @PostMapping("/directory")
     public ResponseEntity<Object>createDirectory (@Valid @ModelAttribute PathParams params) throws Exception {
         String path = params.path();
-        GetDirectoryDTO getDirectoryDTO =  directoryService.createFolder(path);
+        GetDirectoryDTO getDirectoryDTO =  resourceService.createFolder(path);
         return new ResponseEntity<>(getDirectoryDTO, HttpStatus.CREATED);
     }
 
@@ -37,7 +37,7 @@ public class DirectoryController {
     @GetMapping("/directory")
     public ResponseEntity<Object>getData (@Valid @ModelAttribute PathParams params) {
         String path = params.path();
-        List<Item> data =  directoryService.getFolderData(path);
+        List<Item> data =  resourceService.getFolderData(path);
 
         List<GetResourceData> d = data.stream()
                 .map(i -> {
@@ -51,9 +51,6 @@ public class DirectoryController {
             )
                 .filter(e -> !(e.name().length() < 1))
                 .collect(Collectors.toList());
-
-
-
         return new ResponseEntity<>(d, HttpStatus.OK);
     }
 
