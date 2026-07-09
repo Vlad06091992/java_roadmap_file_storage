@@ -100,19 +100,14 @@ public class ResourceController {
     }
 
     @GetMapping("/resource/download")
-    public ResponseEntity<Object> download(@RequestParam("path") String path) {
+    public ResponseEntity<Object> download(@RequestParam("path") String path) throws Exception {
         //TODO папка скачивается пустым архивом
 
-        GetObjectResponse result = directoryService.getObject(path);
+        InputStream result = directoryService.getDownloadData(path);
 
         InputStreamResource resource = new InputStreamResource(result);
 
-        String name = "hz";
-
-        Headers headers = result.headers();
-
-        String size = headers.get("Content-Length");
-
+        String name = "";
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")

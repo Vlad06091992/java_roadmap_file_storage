@@ -14,13 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -149,19 +148,73 @@ public class DirectoryService {
         }
     }
 
+    public ByteArrayOutputStream downloadFolderAsZip(String path) throws Exception {
+        // 1. Создаём поток для ZIP-архива в памяти
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(baos);
 
-    public GetObjectResponse getObject(String path) {
-        try {
-            GetObjectResponse stream = minioClient.getObject(
+        // 2. Получаем список всех объектов в папке (рекурсивно)
+        Iterable<Result<Item>> results = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket("user1111")
+                        .prefix(path)  // например, "my-folder/"
+                        .recursive(true)       // заходить во вложенные папки
+                        .build()
+        );
+
+        // 3. Проходим по каждому файлу
+        for (Result<Item> result : results) {
+            Item item = result.get();
+            String objectName = item.objectName();
+
+            // Пропускаем, если это сама "папка" (в MinIO папки — это просто объекты с / в конце)
+            if (objectName.endsWith("/")) {
+                continue;
+            }
+
+            // Скачиваем содержимое файла
+            try (InputStream is = minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket("user1111")
-                            .object(path)
-                            .build());
+                            .object(objectName)
+                            .build())
+            ) {
+                // Добавляем файл в ZIP
+                // Убираем префикс, чтобы внутри архива путь был относительным
+                String entryName = objectName.replaceFirst("^" + path, "");
+                zos.putNextEntry(new ZipEntry(entryName));
 
-            return stream;
-        } catch (MinioException e) {
-            throw new ResourceNotFoundException();
+                // Копируем данные из MinIO в ZIP
+                byte[] buffer = new byte[8192];
+                int length;
+                while ((length = is.read(buffer)) > 0) {
+                    zos.write(buffer, 0, length);
+                }
+
+                zos.closeEntry();
+            }
         }
+
+        zos.close();
+        return baos; // возвращаем ZIP как массив байтов
+    }
+
+
+    public GetObjectResponse getObject(String path) {
+
+        boolean isFolder = path.endsWith("/");
+
+            try {
+                GetObjectResponse stream = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket("user1111")
+                                .object(path)
+                                .build());
+
+                return stream;
+            } catch (MinioException e) {
+                throw new ResourceNotFoundException();
+            }
     }
 
 
@@ -179,6 +232,28 @@ public class DirectoryService {
         return getList(results);
 
 
+    }
+
+
+    public InputStream getDownloadData(String path) throws Exception {
+
+        boolean isFolder = path.endsWith("/");
+
+        if(isFolder){
+            ByteArrayOutputStream res = downloadFolderAsZip(path);
+            return new ByteArrayInputStream(res.toByteArray());
+
+        } else {
+            try {
+                return minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket("user1111")
+                                .object(path)
+                                .build());
+            } catch (MinioException e) {
+                throw new ResourceNotFoundException();
+            }
+        }
     }
 
     public boolean isExistObject(String path) {
