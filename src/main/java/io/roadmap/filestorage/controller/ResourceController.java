@@ -60,6 +60,7 @@ public class ResourceController {
     @GetMapping("/resource")
     public ResponseEntity<GetResourceData> getDirectoryInfo(@RequestParam("path") String path) {
 
+        //TODO везде для парсинга путей использоватьб pathResolver.getPathData(<path>);
         Boolean isDirectory = (path.charAt(path.length() - 1)) == '/';
 
         String[] parts = path.split("/");
@@ -85,24 +86,37 @@ public class ResourceController {
 
         InputStreamResource resource = new InputStreamResource(result);
 
-        String name = "";
-
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment")
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(resource);
     }
 
     @GetMapping("/resource/move")
-    public ResponseEntity<Object> move(
+    public ResponseEntity<GetResourceData> move(
             @RequestParam("from") String from,
             @RequestParam("to") String to
     ) throws Exception {
         resourceService.move(from, to);
-        resourceService.getStatData(to);
+
+        //TODO везде для парсинга путей использоватьб pathResolver.getPathData(<path>);
+
+
+        Boolean isDirectory = (to.charAt(to.length() - 1)) == '/';
+
+        String[] parts = to.split("/");
+        String dirName = parts[parts.length - 1];
+        String dirPath = parts.length > 1 ? to.substring(0, to.length() - 1) : "/";
+        GetObjectResponse result = resourceService.getData(to);
+
+        Headers headers = result.headers();
+        String size = headers.get("Content-Length");
+        long s = Long.valueOf(size);
+        GetResourceData getDirectoryDTO = isDirectory ? new GetDirectoryDTO(dirPath, dirName) : new GetFileDTO(dirPath, dirName, s);
+
+
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "" + "\"")
-                .contentType(MediaType.parseMediaType("application/octet-stream"))
-                .body(null);
+                .body(getDirectoryDTO);
     }
 }
