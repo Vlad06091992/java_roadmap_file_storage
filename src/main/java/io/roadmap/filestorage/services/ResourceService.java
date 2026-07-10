@@ -73,9 +73,8 @@ public class ResourceService {
     }
 
 
-    public void saveFromStream(InputStream stream, String path, String name, Long size) throws Exception {
+    public void saveFromStream(InputStream stream, String path, long size) {
         try {
-            String name1 = path + "/" + name;
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(getUserBucketName())
@@ -84,7 +83,7 @@ public class ResourceService {
                             .build()
             );
         } catch (Exception e) {
-
+            throw new RuntimeException(e);
         }
 
 //        return new GetFileDTO(directoryPath, file.getOriginalFilename(), file.getSize());
@@ -156,6 +155,21 @@ public class ResourceService {
             throw new ResourceNotFoundException();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+
+    public StatObjectResponse getStatData(String path) {
+        try {
+
+            return minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(getUserBucketName())
+                            .object(path)
+                            .build());
+
+        } catch (MinioException e) {
+            throw new ResourceNotFoundException();
         }
     }
 
@@ -243,6 +257,55 @@ public class ResourceService {
         return getList(results);
 
 
+    }
+
+    private void moveFolder(String from, String to) throws Exception {
+        Iterable<Result<Item>> results = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket(getUserBucketName())
+                        .prefix(from)
+                        .recursive(true)
+                        .build()
+        );
+
+        for (Result<Item> result : results) {
+            Item item = result.get();
+            String sourcePath = item.objectName();
+            String relativePath = sourcePath.substring(from.length());
+            String destPath = to + relativePath;
+
+            moveFile(sourcePath,destPath);
+        }
+    }
+
+    private void moveFile(String from, String to) throws Exception {
+        // Копируем файл
+        minioClient.copyObject(
+                CopyObjectArgs.builder()
+                        .bucket(getUserBucketName())
+                        .object(to)
+                        .source(SourceObject.builder()
+                                .bucket(getUserBucketName())
+                                .object(from)
+                                .build())
+                        .build()
+        );
+        // Удаляем оригинал
+        minioClient.removeObject(
+                RemoveObjectArgs.builder()
+                        .bucket(getUserBucketName())
+                        .object(from)
+                        .build()
+        );
+    }
+
+    public void move(String from, String to) throws Exception {
+        boolean isFolder = from.endsWith("/");
+        if (isFolder) {
+            moveFolder(from, to);
+        } else {
+            moveFile(from, to);
+        }
     }
 
 
