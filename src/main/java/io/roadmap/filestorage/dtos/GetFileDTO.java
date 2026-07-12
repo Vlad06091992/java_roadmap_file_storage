@@ -1,6 +1,6 @@
-package io.roadmap.filestorage.dto;
+package io.roadmap.filestorage.dtos;
 
-import io.roadmap.filestorage.dto.interfaces.GetResourceData;
+import io.roadmap.filestorage.dtos.interfaces.GetResourceData;
 
 public record GetFileDTO(
         String path,

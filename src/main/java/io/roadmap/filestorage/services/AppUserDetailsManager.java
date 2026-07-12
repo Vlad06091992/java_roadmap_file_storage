@@ -1,6 +1,6 @@
 package io.roadmap.filestorage.services;
 
-import io.roadmap.filestorage.entity.User;
+import io.roadmap.filestorage.entities.User;
 import io.roadmap.filestorage.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +15,6 @@ import java.util.Optional;
 public class AppUserDetailsManager implements UserDetailsManager {
 
     private final UserRepository userRepository;
-
 
     @Override
     public void createUser(UserDetails user) {
@@ -52,6 +51,4 @@ public class AppUserDetailsManager implements UserDetailsManager {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
-
-
 }

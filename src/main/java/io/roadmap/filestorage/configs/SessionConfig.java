@@ -1,4 +1,4 @@
-package io.roadmap.filestorage.config;
+package io.roadmap.filestorage.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

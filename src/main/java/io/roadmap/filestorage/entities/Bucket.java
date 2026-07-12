@@ -1,4 +1,4 @@
-package io.roadmap.filestorage.entity;
+package io.roadmap.filestorage.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package io.roadmap.filestorage.config;
+package io.roadmap.filestorage.configs;
 
 import io.minio.MinioClient;
 import io.roadmap.filestorage.intecrceptors.DecodeParamsInterceptor;
@@ -11,8 +11,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @RequiredArgsConstructor
 public class AppConfig implements WebMvcConfigurer {
-
-
     private final DecodeParamsInterceptor decodeParamsinterceptor;
 
     @Bean

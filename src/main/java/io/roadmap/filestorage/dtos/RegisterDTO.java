@@ -1,12 +1,9 @@
-package io.roadmap.filestorage.dto;
+package io.roadmap.filestorage.dtos;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * Data Transfer Object for user registration and authentication
- */
 public record RegisterDTO(
         @NotNull(message = "username is required")
         @Pattern(regexp = "^[0-9A-Za-z_-]+$",

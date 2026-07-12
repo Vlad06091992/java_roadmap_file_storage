@@ -1,4 +1,4 @@
-package io.roadmap.filestorage.config;
+package io.roadmap.filestorage.configs;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -55,38 +55,12 @@ public class SecurityConfig {
                 .build();
     }
 
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(List.of("*"));
-//        config.setAllowedMethods(List.of("*"));
-//        config.setAllowedHeaders(List.of("*"));
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", config);
-//        return source;
-//    }
-
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        // ✅ Укажите конкретные origins вместо "*"
-        config.setAllowedOrigins(List.of(
-                "http://localhost:3000",   // React/Vite фронтенд
-                "http://localhost:5173",   // Vite порт по умолчанию
-                "http://localhost:8080",   // Альтернативный порт
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:5173"
-        ));
-
-        // ✅ Явно разрешаем credentials (куки, авторизацию)
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowCredentials(true);
-
-        // ✅ Разрешенные методы
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-        // ✅ Разрешенные заголовки
         config.setAllowedHeaders(List.of(
                 "Authorization",
                 "Content-Type",
@@ -98,10 +72,7 @@ public class SecurityConfig {
                 "Cookie"
         ));
 
-        // ✅ Экспонируемые заголовки (для клиента)
         config.setExposedHeaders(List.of("Set-Cookie", "Authorization"));
-
-        // ✅ Максимальное время кэширования preflight запроса (в секундах)
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

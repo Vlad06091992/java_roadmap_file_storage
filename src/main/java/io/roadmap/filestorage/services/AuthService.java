@@ -1,9 +1,10 @@
 package io.roadmap.filestorage.services;
 
-import io.roadmap.filestorage.dto.LoginDTO;
-import io.roadmap.filestorage.dto.RegisterDTO;
-import io.roadmap.filestorage.entity.Bucket;
-import io.roadmap.filestorage.entity.User;
+import io.roadmap.filestorage.dtos.LoginDTO;
+import io.roadmap.filestorage.dtos.RegisterDTO;
+import io.roadmap.filestorage.entities.Bucket;
+import io.roadmap.filestorage.entities.User;
+import io.roadmap.filestorage.exceptions.UnauthorizedException;
 import io.roadmap.filestorage.exceptions.UserAlreadyExistException;
 import io.roadmap.filestorage.repositories.BucketRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Locale;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -53,13 +50,11 @@ public class AuthService {
             user.setPassword(passwordEncoder.encode(registerDTO.password()));
 
             //TODO унести в какие-то утилиты создание имени бакета, и использовать унитарно
-//            String bucketName = sanitizeBucketName(registerDTO.username());
             String bucketName = registerDTO.username().toLowerCase();
 
             Bucket bucket = new Bucket();
             bucket.setName(bucketName);
             bucket.setUser(user);
-
             bucketRepository.save(bucket);
 
             user.setBucket(bucket);
@@ -69,25 +64,16 @@ public class AuthService {
 
         } catch (Exception e) {
             // Пробрасываем оригинальное исключение для отката транзакции
-            throw new RuntimeException("Registration failed: " + e.getMessage(), e);
+            throw new RuntimeException(e);
         }
-    }
-
-    private String sanitizeBucketName(String username) {
-        return username.toLowerCase()
-                .replaceAll("[^a-z0-9-]", "-")
-                .replaceAll("-{2,}", "-")
-                .replaceAll("^-|-$", "")
-                + "-" + UUID.randomUUID().toString().substring(0, 8);
     }
 
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
+            throw new UnauthorizedException();
         }
         return (User) authentication.getPrincipal();
     }
-
 }
 

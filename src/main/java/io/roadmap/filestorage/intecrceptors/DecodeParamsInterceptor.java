@@ -13,33 +13,33 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
 @Component
 public  class DecodeParamsInterceptor implements  HandlerInterceptor {
 
-    @Override
-    public  boolean  preHandle (HttpServletRequest request, HttpServletResponse response, Object handler)  throws Exception {
-        System.out.println( "PreHandle: Перехват запроса..." );
-        System.out.println( "URI запроса: " + request.getRequestURI());
-        request = new DecodedRequestWrapper(request);
+//    @Override
+//    public  boolean  preHandle (HttpServletRequest request, HttpServletResponse response, Object handler)  throws Exception {
+//        System.out.println( "PreHandle: Перехват запроса..." );
+//        System.out.println( "URI запроса: " + request.getRequestURI());
+//        request = new DecodedRequestWrapper(request);
+//
+//        return  true ; // Продолжить обработку запроса
+//    }
 
-        return  true ; // Продолжить обработку запроса
-    }
+//    @Override
+//    public  void  postHandle (HttpServletRequest request, HttpServletResponse response, Object handler, org.springframework.web.servlet.ModelAndView modelAndView)  throws Exception {
+//        System.out.println( "PostHandle: Обработка запроса завершена." );
+//    }
 
-    @Override
-    public  void  postHandle (HttpServletRequest request, HttpServletResponse response, Object handler, org.springframework.web.servlet.ModelAndView modelAndView)  throws Exception {
-        System.out.println( "PostHandle: Обработка запроса завершена." );
-    }
-
-    @Override
-    public  void  afterCompletion (HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)  throws Exception {
-        System.out.println( "AfterCompletion: Обработка запроса завершена." );
-    }
+//    @Override
+//    public  void  afterCompletion (HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)  throws Exception {
+//        System.out.println( "AfterCompletion: Обработка запроса завершена." );
+//    }
 
     public class DecodedRequestWrapper extends HttpServletRequestWrapper {
-
         public DecodedRequestWrapper(HttpServletRequest request) {
             super(request);
         }
@@ -53,8 +53,7 @@ public  class DecodeParamsInterceptor implements  HandlerInterceptor {
         @Override
         public Map<String, String[]> getParameterMap() {
             Map<String, String[]> original = super.getParameterMap();
-//            Map<String, String[]> decoded = new LinkedHashMap<>();
-            Map<String, String[]> decoded = new HashMap<>();
+            Map<String, String[]> decoded = new LinkedHashMap<>();
 
             for (Map.Entry<String, String[]> entry : original.entrySet()) {
                 String[] decodedValues = Arrays.stream(entry.getValue())

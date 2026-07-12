@@ -1,6 +1,6 @@
 package io.roadmap.filestorage.components;
 
-import io.roadmap.filestorage.dto.ResourceTypes;
+import io.roadmap.filestorage.dtos.ResourceTypes;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -19,25 +19,25 @@ public class PathResolver {
     ) {
     }
 
-    private Boolean isDirectory(String path) {
+    public Boolean isDirectory(String path) {
         return (path.charAt(path.length() - 1)) == '/';
     }
 
-    private String[] getParts(String path) {
+    public String[] getParts(String path) {
         return path.split("/");
     }
 
-    private String getResourceName(String path) {
+    public String getResourceName(String path) {
         String[] parts = getParts(path);
         return parts[parts.length - 1];
     }
 
-    private ResourceTypes getResourceType(String path) {
+    public ResourceTypes getResourceType(String path) {
         return isDirectory(path) ? ResourceTypes.DIRECTORY : ResourceTypes.FILE;
 
     }
 
-    private String getResourcePath(String path) {
+    public String getResourcePath(String path) {
         String[] parts = getParts(path);
 
         String[] paths = Arrays.copyOf(parts, parts.length - 1);

@@ -1,9 +1,9 @@
-package io.roadmap.filestorage.controller;
+package io.roadmap.filestorage.controllers;
 
-import io.roadmap.filestorage.dto.LoginDTO;
-import io.roadmap.filestorage.dto.RegisterDTO;
-import io.roadmap.filestorage.dto.RegisterOrLoginResponseDTO;
-import io.roadmap.filestorage.entity.User;
+import io.roadmap.filestorage.dtos.LoginDTO;
+import io.roadmap.filestorage.dtos.RegisterDTO;
+import io.roadmap.filestorage.dtos.RegisterOrLoginResponseDTO;
+import io.roadmap.filestorage.entities.User;
 import io.roadmap.filestorage.services.AuthService;
 import io.roadmap.filestorage.services.ResourceService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Locale;
 
 
 @RestController

@@ -1,10 +1,10 @@
-package io.roadmap.filestorage.controller;
+package io.roadmap.filestorage.controllers;
 
 import io.minio.messages.Item;
-import io.roadmap.filestorage.dto.GetDirectoryDTO;
-import io.roadmap.filestorage.dto.GetFileDTO;
-import io.roadmap.filestorage.dto.PathParams;
-import io.roadmap.filestorage.dto.interfaces.GetResourceData;
+import io.roadmap.filestorage.dtos.GetDirectoryDTO;
+import io.roadmap.filestorage.dtos.GetFileDTO;
+import io.roadmap.filestorage.dtos.PathParams;
+import io.roadmap.filestorage.dtos.interfaces.GetResourceData;
 import io.roadmap.filestorage.services.ResourceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

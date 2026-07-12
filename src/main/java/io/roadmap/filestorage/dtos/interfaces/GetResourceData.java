@@ -1,7 +1,7 @@
-package io.roadmap.filestorage.dto.interfaces;
+package io.roadmap.filestorage.dtos.interfaces;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.roadmap.filestorage.dto.ResourceTypes;
+import io.roadmap.filestorage.dtos.ResourceTypes;
 
 public interface GetResourceData {
     String path();

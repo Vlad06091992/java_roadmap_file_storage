@@ -1,7 +1,7 @@
-package io.roadmap.filestorage.dto;
+package io.roadmap.filestorage.dtos;
 
 
-import io.roadmap.filestorage.dto.interfaces.GetResourceData;
+import io.roadmap.filestorage.dtos.interfaces.GetResourceData;
 
 public record GetDirectoryDTO(
         String path,
@@ -9,9 +9,6 @@ public record GetDirectoryDTO(
 ) implements GetResourceData {
 
     public static GetDirectoryDTO fromFullPath(String fullPath) {
-
-        //TODO нужна ли здесь подобная логика?
-
         String normalized = fullPath.endsWith("/")
                 ? fullPath.substring(0, fullPath.length() - 1)
                 : fullPath;
