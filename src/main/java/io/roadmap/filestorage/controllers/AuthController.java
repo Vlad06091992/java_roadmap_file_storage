@@ -47,7 +47,7 @@ public class AuthController {
     @PostMapping("/sign-up")
     public ResponseEntity<RegisterOrLoginResponseDTO> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletRequest request, HttpServletResponse response) {
         User user = authService.register(registerDTO);
-        resourceService.createBucket(registerDTO.username().toLowerCase());
+        resourceService.createUserRootFolder(user.getId());
         RegisterOrLoginResponseDTO registerResponseDTO = new RegisterOrLoginResponseDTO(user.getUsername());
         LoginDTO loginRequest = new LoginDTO(registerDTO.username(), registerDTO.password());
         loginAndSaveContext(loginRequest,request,response);

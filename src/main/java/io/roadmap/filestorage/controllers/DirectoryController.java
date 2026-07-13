@@ -35,24 +35,11 @@ public class DirectoryController {
 
 
     @GetMapping("/directory")
-    public ResponseEntity<Object>getData (@Valid @ModelAttribute PathParams params) {
+    public ResponseEntity<List<GetResourceData>>getData (@Valid @ModelAttribute PathParams params) {
         String path = params.path();
-        List<Item> data =  resourceService.getFolderData(path);
+        List<GetResourceData> data =  resourceService.getFolderData(path);
 
-        List<GetResourceData> d = data.stream()
-                .map(i -> {
-                    if (i.isDir()) {
-                        return GetDirectoryDTO.fromFullPath(i.objectName());
-                    } else {
-                        return GetFileDTO.fromFullPath(i.objectName(), i.size());
-
-                    }
-                }
-            )
-                .filter(e -> !(e.name().length() < 1))
-                .collect(Collectors.toList());
-        return new ResponseEntity<>(d, HttpStatus.OK);
+        return new ResponseEntity<>(data, HttpStatus.OK);
     }
-
 
 }

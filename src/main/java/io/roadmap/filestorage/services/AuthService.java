@@ -2,11 +2,9 @@ package io.roadmap.filestorage.services;
 
 import io.roadmap.filestorage.dtos.LoginDTO;
 import io.roadmap.filestorage.dtos.RegisterDTO;
-import io.roadmap.filestorage.entities.Bucket;
 import io.roadmap.filestorage.entities.User;
 import io.roadmap.filestorage.exceptions.UnauthorizedException;
 import io.roadmap.filestorage.exceptions.UserAlreadyExistException;
-import io.roadmap.filestorage.repositories.BucketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +22,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AppUserDetailsManager userDetailsManager;
     private final PasswordEncoder passwordEncoder;
-    private final BucketRepository bucketRepository;
 
     public SecurityContext login(LoginDTO loginRequest) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
@@ -49,15 +46,6 @@ public class AuthService {
             user.setUsername(registerDTO.username());
             user.setPassword(passwordEncoder.encode(registerDTO.password()));
 
-            //TODO унести в какие-то утилиты создание имени бакета, и использовать унитарно
-            String bucketName = registerDTO.username().toLowerCase();
-
-            Bucket bucket = new Bucket();
-            bucket.setName(bucketName);
-            bucket.setUser(user);
-            bucketRepository.save(bucket);
-
-            user.setBucket(bucket);
             userDetailsManager.createUser(user);
 
             return user;
