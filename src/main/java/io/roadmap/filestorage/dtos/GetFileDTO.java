@@ -1,10 +1,15 @@
 package io.roadmap.filestorage.dtos;
 
 import io.roadmap.filestorage.dtos.interfaces.GetResourceData;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Файл")
 public record GetFileDTO(
+        @Schema(description = "Путь к файлу относительно корня пользователя", example = "docs/")
         String path,
+        @Schema(description = "Имя файла", example = "report.pdf")
         String name,
+        @Schema(description = "Размер файла в байтах", example = "10240")
         Long size
 ) implements GetResourceData {
 

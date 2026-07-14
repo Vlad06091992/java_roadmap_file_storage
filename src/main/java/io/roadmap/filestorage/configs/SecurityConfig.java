@@ -39,6 +39,13 @@ public class SecurityConfig {
                         request
                                 .requestMatchers("/api/auth/sign-up", "/api/auth/sign-in")
                                 .permitAll()
+                                // Swagger UI и OpenAPI-схема доступны без аутентификации
+                                .requestMatchers(
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**")
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated())
                 .exceptionHandling(ex -> ex

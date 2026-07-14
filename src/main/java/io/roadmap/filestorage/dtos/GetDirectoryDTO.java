@@ -2,9 +2,13 @@ package io.roadmap.filestorage.dtos;
 
 
 import io.roadmap.filestorage.dtos.interfaces.GetResourceData;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Папка")
 public record GetDirectoryDTO(
+        @Schema(description = "Путь к папке относительно корня пользователя", example = "docs/")
         String path,
+        @Schema(description = "Имя папки (оканчивается на `/`)", example = "reports/")
         String name
 ) implements GetResourceData {
 

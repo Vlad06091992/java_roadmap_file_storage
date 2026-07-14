@@ -6,6 +6,15 @@ import io.roadmap.filestorage.dtos.RegisterOrLoginResponseDTO;
 import io.roadmap.filestorage.entities.User;
 import io.roadmap.filestorage.services.AuthService;
 import io.roadmap.filestorage.services.ResourceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.roadmap.filestorage.configs.OpenApiConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -22,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
+@Tag(name = "Аутентификация", description = "Регистрация, вход и выход. Управляет сессионной cookie SESSION.")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -36,6 +46,16 @@ public class AuthController {
         securityContextRepository.saveContext(context, request, response);
     }
 
+    @Operation(
+            summary = "Вход в систему",
+            description = "Проверяет учётные данные и открывает сессию: в ответе выставляется cookie SESSION. "
+                    + "Публичный эндпоинт — аутентификация не требуется.")
+    @SecurityRequirements
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Успешный вход, сессия открыта"),
+            @ApiResponse(responseCode = "401", description = "Неверный логин или пароль",
+                    content = @Content(schema = @Schema(hidden = true)))
+    })
     @PostMapping("/sign-in")
     public RegisterOrLoginResponseDTO login(@RequestBody LoginDTO loginRequest, HttpServletRequest request, HttpServletResponse response) {
         loginAndSaveContext(loginRequest,request,response);
@@ -44,6 +64,18 @@ public class AuthController {
 
     }
 
+    @Operation(
+            summary = "Регистрация нового пользователя",
+            description = "Создаёт пользователя, заводит его корневую папку в хранилище и сразу открывает сессию "
+                    + "(в ответе выставляется cookie SESSION). Публичный эндпоинт.")
+    @SecurityRequirements
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Пользователь создан, сессия открыта"),
+            @ApiResponse(responseCode = "400", description = "Невалидные данные (нарушены ограничения логина/пароля)",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "400", description = "Пользователь с таким именем уже существует",
+                    content = @Content(schema = @Schema(hidden = true)))
+    })
     @PostMapping("/sign-up")
     public ResponseEntity<RegisterOrLoginResponseDTO> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletRequest request, HttpServletResponse response) {
         User user = authService.register(registerDTO);
@@ -55,6 +87,15 @@ public class AuthController {
     }
 
 
+    @Operation(
+            summary = "Выход из системы",
+            description = "Завершает текущую сессию и очищает контекст безопасности.")
+    @SecurityRequirement(name = OpenApiConfig.SESSION_COOKIE)
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Сессия завершена"),
+            @ApiResponse(responseCode = "401", description = "Нет активной сессии",
+                    content = @Content(schema = @Schema(hidden = true)))
+    })
     @PostMapping("/sign-out")
     public ResponseEntity<Void> performLogout(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
         securityContextLogoutHandler.logout(request, response, authentication);
