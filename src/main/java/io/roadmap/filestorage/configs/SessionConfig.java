@@ -11,8 +11,8 @@ import org.springframework.session.web.context.AbstractHttpSessionApplicationIni
 public class SessionConfig
         extends AbstractHttpSessionApplicationInitializer
 {
-    @Bean
-    public LettuceConnectionFactory connectionFactory() {
-        return new LettuceConnectionFactory(); // <2>
-    }
+//    @Bean
+//    public LettuceConnectionFactory connectionFactory() {
+//        return new LettuceConnectionFactory(); // <2>
+//    }
 }

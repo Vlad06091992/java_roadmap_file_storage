@@ -15,8 +15,8 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Bean
     public MinioClient minioClient() {
-     return   MinioClient.builder()
-                .endpoint("http://127.0.0.1:9000")
+        return MinioClient.builder()
+                .endpoint("minio", 9000, false)
                 .credentials("minioadmin", "minioadmin")
                 .build();
     }
