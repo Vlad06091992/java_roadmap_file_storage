@@ -27,7 +27,7 @@ USER spring:spring
 COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
 
 # Expose Spring Boot's standard port
-EXPOSE 8080
+EXPOSE 8081
 
 # Run the jar with recommended flags for container optimization
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

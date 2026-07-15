@@ -3,6 +3,7 @@ package io.roadmap.filestorage.configs;
 import io.minio.MinioClient;
 import io.roadmap.filestorage.intecrceptors.DecodeParamsInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -14,10 +15,13 @@ public class AppConfig implements WebMvcConfigurer {
     private final DecodeParamsInterceptor decodeParamsinterceptor;
 
     @Bean
-    public MinioClient minioClient() {
+    public MinioClient minioClient(
+            @Value("${minio.endpoint}") String endpoint,
+            @Value("${minio.access-key}") String accessKey,
+            @Value("${minio.secret-key}") String secretKey) {
         return MinioClient.builder()
-                .endpoint("minio", 9000, false)
-                .credentials("minioadmin", "minioadmin")
+                .endpoint(endpoint)
+                .credentials(accessKey, secretKey)
                 .build();
     }
 

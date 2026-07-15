@@ -60,3 +60,11 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Локальный запуск (не в Docker) по умолчанию идёт с профилем dev →
+// подхватывается application-dev.properties (localhost, без .env).
+// Переопределить: ./gradlew bootRun -Pprofile=prod
+tasks.named('bootRun') {
+    def profile = findProperty('profile')
+    systemProperty 'spring.profiles.active', profile ? profile : 'dev'
+}

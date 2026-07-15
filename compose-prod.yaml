@@ -7,16 +7,8 @@ services:
       - "8082:8081"
     networks:
       - claude_storage
-    environment: # ← ДОБАВЬТЕ ЭТО
-
-      - SPRING_DATA_REDIS_HOST=redis
-      - SPRING_DATA_REDIS_PORT=6379
-      - SPRING_REDIS_HOST=redis  # ← ДОБАВЬТЕ ЭТИ две строки
-      - SPRING_REDIS_PORT=6379   # ← на случай, если используется spring.redis (без data)
-      - SPRING_DATA_REDIS_URL=redis://redis:6379
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/file_storage
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+    env_file:
+      - .env
     depends_on:
       - redis
       - postgres

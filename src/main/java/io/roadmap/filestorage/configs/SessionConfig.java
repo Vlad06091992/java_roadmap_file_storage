@@ -9,10 +9,4 @@ import org.springframework.session.web.context.AbstractHttpSessionApplicationIni
 @Configuration
 @EnableRedisHttpSession
 public class SessionConfig
-        extends AbstractHttpSessionApplicationInitializer
-{
-//    @Bean
-//    public LettuceConnectionFactory connectionFactory() {
-//        return new LettuceConnectionFactory(); // <2>
-//    }
-}
+        extends AbstractHttpSessionApplicationInitializer {}
