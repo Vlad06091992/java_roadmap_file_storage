@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.List;
 import java.util.Map;
@@ -36,27 +37,32 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserAlreadyExistException.class)
-    public ResponseEntity<Object> handleGlobalException(UserAlreadyExistException ex) {
+    public ResponseEntity<Map<String,String>> handleGlobalException(UserAlreadyExistException ex) {
         return new ResponseEntity<>(getResponse(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Object> handleGlobalException(ResourceNotFoundException ex) {
+    public ResponseEntity<Map<String,String>> handleGlobalException(ResourceNotFoundException ex) {
         return new ResponseEntity<>(getResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Object> handleGlobalException(RuntimeException ex) {
+    public ResponseEntity<Map<String,String>> handleGlobalException(RuntimeException ex) {
         return new ResponseEntity<>(getResponse(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
     @ExceptionHandler(DirectoryAlreadyExistException.class)
-    public ResponseEntity<Object> handleGlobalException(DirectoryAlreadyExistException ex) {
+    public ResponseEntity<Map<String,String>> handleGlobalException(DirectoryAlreadyExistException ex) {
         return new ResponseEntity<>(getResponse(ex.getMessage()), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Object> handleGlobalException(UnauthorizedException ex) {
+    public ResponseEntity<Map<String,String>> handleGlobalException(UnauthorizedException ex) {
         return new ResponseEntity<>(getResponse(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String,String>> handleMaxSizeException(MaxUploadSizeExceededException exc) {
+        return new ResponseEntity<>(getResponse("The uploaded file exceeds the maximum allowed limit of 20MB."), HttpStatus.PAYLOAD_TOO_LARGE);
     }
 }
