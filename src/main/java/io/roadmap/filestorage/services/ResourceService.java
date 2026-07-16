@@ -244,6 +244,9 @@ public class ResourceService {
 
     public InputStream getDownloadData(String path) throws Exception {
         if (pathResolver.isDirectory(path)) {
+            if (!isExistResource(path)) {
+                throw new ResourceNotFoundException();
+            }
             ByteArrayOutputStream res = downloadFolderAsZip(path);
             return new ByteArrayInputStream(res.toByteArray());
 
@@ -358,6 +361,7 @@ public class ResourceService {
 
 
     public List<GetResourceData> getFolderData(String path) {
+        String userPrefix = getUserPrefix();
         Iterable<Result<Item>> results = minioClient.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(BUCKET_NAME)
@@ -370,10 +374,11 @@ public class ResourceService {
 
         return data.stream()
                 .map(i -> {
+                            String relative = i.objectName().substring(userPrefix.length());
                             if (i.isDir()) {
-                                return GetDirectoryDTO.fromFullPath(i.objectName());
+                                return GetDirectoryDTO.fromFullPath(relative);
                             } else {
-                                return GetFileDTO.fromFullPath(i.objectName(), i.size());
+                                return GetFileDTO.fromFullPath(relative, i.size());
 
                             }
                         }
